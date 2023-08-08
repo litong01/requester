@@ -40,7 +40,7 @@ jobs:
       - name: build and push images
         run: |
           docker buildx build --push \
-            --tag ${{ env.DH_REGISTRY }}/${{env.DH_USER }}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}} \
+            --tag ${{ env.DH_REGISTRY }}/${{ secrets.DH_USER }}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}} \
             --platform linux/amd64,linux/arm64 .
 
       - name: Docker Hub Description
