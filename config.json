@@ -1,0 +1,13 @@
+{
+    "queries": [
+        {
+            "name": "TotalActiveAccount",
+            "query": "count(max by (account_id,account_name) (max_over_time(astra_nautilus_app_v6{state=~\"protected|partial|atRisk|none|clone\"}[1d])) > 0)"
+        },
+        {
+            "name": "TotalPremiumAccount",
+            "query": "count(count by (account_name) (count_over_time(astra_billing_account_total_minutes{terms=\"paid\"}[1h])))"
+        }
+    ],
+    "endpoint": "https://prometheus.prd.ee01.prd.azr.astra.netapp.io/api/v1/query"
+}

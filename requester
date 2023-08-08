@@ -1,0 +1,7 @@
+#!/bin/bash
+# The following environment variables can be set
+#    REGISTRY_TOEKN   - the token for the REGISTRY_USERID
+docker run -it --rm --name requester --network host \
+   -e "REGISTRY_TOKEN=${REGISTRY_TOKEN}" \
+   -v /tmp/requester:/home/work/requester \
+   tli551/requester:latest time requester $@
