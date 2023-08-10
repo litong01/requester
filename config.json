@@ -7,6 +7,18 @@
         {
             "name": "TotalPremiumAccount",
             "query": "count(count by (account_name) (count_over_time(astra_billing_account_total_minutes{terms=\"paid\"}[1h])))"
+        },
+        {
+            "name": "AccountDetailRegisteredUser",
+            "query": "sum by (accountID,accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job=\"identity\", measurement=\"registered\"}[1h]))"
+        },
+        {
+            "name": "AccountDetailActivatedUser",
+            "query": "sum by (accountID, accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job=\"identity\", measurement=\"activated\"}[1h]))"
+        },
+        {
+            "name": "AccountDetailBillingMinutes",
+            "query": "sum by (accountID, accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job=\"identity\", measurement=\"activated\"}[1h]))"
         }
     ],
     "endpoint": "https://prometheus.prd.ee01.prd.azr.astra.netapp.io/api/v1/query"

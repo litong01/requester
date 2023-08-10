@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -67,13 +69,15 @@ func main() {
 	}
 
 	fmt.Printf("The endpoint is %s", config.Endpoint)
+	unixMilli := time.Now().UnixMilli() / 1000
+	strVal := strconv.FormatInt(int64(unixMilli), 10)
 	for _, query := range config.Queries {
 		fmt.Println("Query name: " + query.Name)
 		fmt.Println("Query: " + query.Query)
 
 		formData := url.Values{
 			"query": {query.Query},
-			"time":  {`1691452069.103`},
+			"time":  {strVal},
 		}
 		getData(formData, query.Name+".json")
 	}
