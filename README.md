@@ -5,10 +5,14 @@
 This application require docker runtime.
 
 ### For OS X and Linux system
-Download [runner](#runner) file, name it runner and chmod +x runner.
+Download [runner](runner) file, name it `runner` and `chmod +x runner`.
+Run ```./runner```
 
 ### For Windows system
-Download [runner.cmd](#runner.cmd), name it runner.cmd.
+Download [runner.cmd](runner.cmd), name it runner.cmd.
+Run ```.\runner```
+
+## Customize the runner
 
 ### Make the program save data in a different location
 To change the data to be at a different location, change the -v parameter
@@ -27,10 +31,9 @@ Make sure that directory `/tmp/mydata` exists before you run the command.
 The runner runs a set of prometheus queries by default, if the data retrieved does
 not have what you are looking for, you can define your own queries to make the runner
 retrieving data produced by your own queries. This runner was designed to take in
-a query configuration file and run against each of the query. Follow the steps at the
-end of this document to create a customized query configuration file. Once you have
+a query configuration file and run against each of the query. Follow the [these steps](#query-configuration-file)
+to create a customized query configuration file. Once you have
 a query configuration file, you can run the following command to let runner use it.
-
 
 ```
 docker run -d --rm --name requester --network host \
