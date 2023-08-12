@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/requester/common/log"
 )
@@ -60,7 +61,7 @@ const (
 
 func main() {
 	// Open configuration json file
-	configFile, err := os.Open("config.json")
+	configFile, err := os.Open("config.yaml")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -72,9 +73,7 @@ func main() {
 
 	var config Config
 
-	// we unmarshal our byteArray which contains our
-	// jsonFile's content into 'users' which we defined above
-	err = json.Unmarshal(byteValue, &config)
+	err = yaml.Unmarshal(byteValue, &config)
 	if err != nil {
 		fmt.Printf("Got error %v", err)
 		os.Exit(1)
