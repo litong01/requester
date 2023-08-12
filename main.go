@@ -60,8 +60,19 @@ const (
 )
 
 func main() {
+
+	configFileName := os.Getenv("CONFIG")
+	if configFileName == "" {
+		configFileName = "config.yaml"
+	}
+
+	dataRootDir := os.Getenv("DATAROOTDIR")
+	if dataRootDir == "" {
+		dataRootDir = "data"
+	}
+
 	// Open configuration json file
-	configFile, err := os.Open("config.yaml")
+	configFile, err := os.Open(configFileName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -81,10 +92,10 @@ func main() {
 
 	msg := fmt.Sprintf("The endpoint is %s", config.Endpoint)
 	log.Logger.Info(msg)
-	currentTime := time.Now()
+	currentTime := time.Now().UTC()
 
 	// Now setup data directory
-	dataDir := fmt.Sprintf("data/%s", currentTime.Format("2006-01-02T15:04:05"))
+	dataDir := fmt.Sprintf("%s/%s", dataRootDir, currentTime.Format("2006-01-02T15-04-05Z"))
 	err = os.Mkdir(dataDir, os.ModePerm)
 	if err != nil {
 		log.Logger.Error("Error when creating the data directory, cannot continue", "error", err.Error())
