@@ -54,6 +54,10 @@ func getData(urlvalues url.Values, target string) error {
 	return nil
 }
 
+const (
+	DDMMYYYYhhmmss = "2006-01-02T15:04:05"
+)
+
 func main() {
 	// Open configuration json file
 	configFile, err := os.Open("config.json")
@@ -76,8 +80,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("The endpoint is %s", config.Endpoint)
-	unixMilli := time.Now().UnixMilli() / 1000
+	msg := fmt.Sprintf("The endpoint is %s", config.Endpoint)
+	log.Logger.Info(msg)
+	currentTime := time.Now()
+
+	// Now setup data directory
+	dataDir := fmt.Sprintf("data/%s", currentTime.Format("2006-01-02T15:04:05"))
+	err = os.Mkdir(dataDir, os.ModePerm)
+	if err != nil {
+		log.Logger.Error("Error when creating the data directory, cannot continue", "error", err.Error())
+		log.Logger.Error("You may have disk run out space or the permission may not be right.")
+		os.Exit(1)
+	}
+
+	unixMilli := currentTime.UnixMilli() / 1000
 	strVal := strconv.FormatInt(int64(unixMilli), 10)
 	for _, query := range config.Queries {
 		formData := url.Values{
@@ -86,14 +102,15 @@ func main() {
 		}
 		// Here is the retry of each query if it fails
 		for _, backoff := range backoffSchedule {
-			err = getData(formData, query.Name+".json")
+			dataPath := fmt.Sprintf("%s/%s.json", dataDir, query.Name)
+			err = getData(formData, dataPath)
 			if err == nil {
 				break
 			}
 			time.Sleep(backoff)
 		}
 		if err != nil {
-
+			log.Logger.Error("Error when retrieve the metrics", "error", err.Error())
 		}
 	}
 }
