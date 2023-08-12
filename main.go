@@ -10,7 +10,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/requester/common/log"
 )
+
+var backoffSchedule = []time.Duration{
+	1 * time.Second,
+	3 * time.Second,
+	9 * time.Second,
+}
 
 type Config struct {
 	Queries  []Query `json:"queries"`
@@ -52,7 +60,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Successfully opened configuration file")
+	log.Logger.Info("Successfully opened configuration file")
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer configFile.Close()
 
@@ -72,13 +80,20 @@ func main() {
 	unixMilli := time.Now().UnixMilli() / 1000
 	strVal := strconv.FormatInt(int64(unixMilli), 10)
 	for _, query := range config.Queries {
-		fmt.Println("Query name: " + query.Name)
-		fmt.Println("Query: " + query.Query)
-
 		formData := url.Values{
 			"query": {query.Query},
 			"time":  {strVal},
 		}
-		getData(formData, query.Name+".json")
+		// Here is the retry of each query if it fails
+		for _, backoff := range backoffSchedule {
+			err = getData(formData, query.Name+".json")
+			if err == nil {
+				break
+			}
+			time.Sleep(backoff)
+		}
+		if err != nil {
+
+		}
 	}
 }
