@@ -1,5 +1,4 @@
-REM The following environment variables can be set
-REM    REGISTRY_TOEKN   - the token for the REGISTRY_USERID
+REM The script to start the data requester application
 @echo off
 docker run -d --rm --name requester --network host ^
    -e "DATAROOTDIR=/home/requester/data" \

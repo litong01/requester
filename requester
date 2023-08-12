@@ -1,8 +1,5 @@
 #!/bin/bash
-# The following environment variables can be set
-#    REGISTRY_TOEKN   - the token for the REGISTRY_USERID
+# The script to start the data requester application
 docker run -d --rm --name requester --network host \
-   -e DATAROOTDIR=/home/requester/data \
-   -e CONFIG=/home/requester/config.yaml \
    -v /tmp/requester/data:/home/requester/data \
    tli551/requester:latest
