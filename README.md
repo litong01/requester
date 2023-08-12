@@ -1,6 +1,6 @@
 ## Prometheus query runner
 
-### Make the program save data at a different location
+### Make the program save data in a different location
 To change the data to be at a different location, change the -v parameter
 For example:
 
