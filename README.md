@@ -1,4 +1,14 @@
-## Prometheus query runner
+# Prometheus query runner
+
+## How to run Prometheus query runner
+
+This application require docker runtime.
+
+### For OS X and Linux system
+Download [runner](#runner) file, name it runner and chmod +x runner.
+
+### For Windows system
+Download [runner.cmd](#runner.cmd), name it runner.cmd.
 
 ### Make the program save data in a different location
 To change the data to be at a different location, change the -v parameter

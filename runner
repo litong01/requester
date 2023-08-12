@@ -1,5 +1,5 @@
 #!/bin/bash
 # The script to start the data requester application
-docker run -d --rm --name requester --network host \
+docker run -d --rm --name runner --network host \
    -v /tmp/requester/data:/home/requester/data \
    tli551/requester:latest
