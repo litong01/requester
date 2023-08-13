@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+
   pull_request:
     branches:
     - main
@@ -14,7 +15,6 @@ env:
   IMAGE_NAME: requester
   IMAGE_TAG: latest
   DH_REGISTRY: docker.io
-  DH_NAMESPACE: tli551
 
 jobs:
   build:
@@ -48,4 +48,4 @@ jobs:
         with:
           username: ${{ secrets.DH_USER }}
           password: ${{ secrets.DH_KEY }}
-          repository: ${{env.DH_NAMESPACE }}/${{env.IMAGE_NAME}}
+          repository: ${{ secrets.DH_USER }}/${{env.IMAGE_NAME}}
