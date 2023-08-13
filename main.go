@@ -56,7 +56,7 @@ func getData(urlvalues url.Values, target string) error {
 }
 
 const (
-	DDMMYYYYhhmmss = "2006-01-02T15:04:05"
+	DATEFORMAT = "2006-01-02T15-04-05Z"
 )
 
 func main() {
@@ -95,7 +95,7 @@ func main() {
 	currentTime := time.Now().UTC()
 
 	// Now setup data directory
-	dataDir := fmt.Sprintf("%s/%s", dataRootDir, currentTime.Format("2006-01-02T15-04-05Z"))
+	dataDir := fmt.Sprintf("%s/%s", dataRootDir, currentTime.Format(DATEFORMAT))
 	err = os.Mkdir(dataDir, os.ModePerm)
 	if err != nil {
 		log.Logger.Error("Error when creating the data directory, cannot continue", "error", err.Error())
