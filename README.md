@@ -19,7 +19,7 @@ To change the data to be at a different location, change the -v parameter
 For example:
 
 ```
-docker run -d --rm --name requester --network host \
+docker run -d --rm --name runner --network host \
    -v /tmp/mydata:/home/requester/data \
    tli551/requester:latest
 ```
@@ -36,7 +36,7 @@ to create a customized query configuration file. Once you have
 a query configuration file, you can run the following command to let runner use it.
 
 ```
-docker run -d --rm --name requester --network host \
+docker run -d --rm --name runner --network host \
    -v /tmp/mynewquery.yaml:/home/requester/config.yaml \
    tli551/requester:latest
 ```
@@ -61,12 +61,23 @@ To create a valid cron job schedule, click [Cron Guru](https://crontab.guru/#0_2
 Save the file with name /tmp/myschedule, then run the command like the following:
 
 ```
-docker run -d --rm --name requester --network host \
+docker run -d --rm --name runner --network host \
    -v /tmp/myschedule:/home/requester/crontab \
    tli551/requester:latest
 ```
 
 With the above command, now your runner runs with the schedule you specified.
+
+
+### Force a run immediately
+For test purposes or to get latest data right now, you can run the following command, the data
+will be placed in `/tmp/mydata` directory
+```
+docker run --rm --network host \
+    --entrypoint /usr/local/bin/requester \
+    -v /tmp/mydata:/home/requester/data \
+    tli551/requester:latest
+```
 
 
 ### Put everything together
@@ -76,7 +87,7 @@ that you use indicate the change you can make individually, to make everything w
 together, you can do this one command like below:
 
 ```
-docker run -d --rm --name requester --network host \
+docker run -d --rm --name runner --network host \
     -v /tmp/mydata:/home/requester/data \
     -v /tmp/mynewquery.yaml:/home/requester/config.yaml \
     -v /tmp/myschedule:/home/requester/crontab \

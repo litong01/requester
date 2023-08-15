@@ -24,5 +24,4 @@ ENV DATAROOTDIR=/home/requester/data
 ENV CONFIG=/home/requester/config.yaml
 WORKDIR /home/requester
 
-ENTRYPOINT []
-CMD /usr/bin/supercronic /home/requester/crontab
+ENTRYPOINT ["/usr/bin/supercronic", "/home/requester/crontab"]

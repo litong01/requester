@@ -123,4 +123,5 @@ func main() {
 			log.Logger.Error("Error when retrieve the metrics", "error", err.Error())
 		}
 	}
+	log.Logger.Info("The run has finished successfully")
 }
