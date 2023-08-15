@@ -3,5 +3,5 @@ REM The script to start the data requester application
 docker run -d --rm --name runner --network host ^
    -e "DATAROOTDIR=/home/requester/data" \
    -e "CONFIG=/home/requester/config.yaml" \
-   -v %TEMP%/requester/data:/home/requester/data \
+   -v %TEMP%/data:/home/requester/data \
    tli551/requesterdt:latest

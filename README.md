@@ -12,7 +12,13 @@ Run ```./runner```
 Download [runner.cmd](runner.cmd), name it runner.cmd.
 Run ```.\runner```
 
-## Customize the runner
+## Customize the runner if needed
+By default, the runner uses a query configuration file come with the runner, save
+retrieved data in `/tmp/data` directory and run the process on 1st and 15th of day
+of each month once the runner get started. You can customize any of the settings.
+The following sections describe the process how to customize each if you like the
+runner save data to a different location, or use your own prometheus query or
+retrieve data using different schedule.
 
 ### Make the program save data in a different location
 To change the data to be at a different location, change the -v parameter
@@ -70,15 +76,15 @@ With the above command, now your runner runs with the schedule you specified.
 
 
 ### Force a run immediately
-For test purposes or to get latest data right now, you can run the following command, the data
-will be placed in `/tmp/mydata` directory
+For test purposes or to get latest data right now, you can run the runner using the following command,
+data retrieved will be placed in `/tmp/mydata` directory. You can change that directory if you desire.
+
 ```
 docker run --rm --network host \
     --entrypoint /usr/local/bin/requester \
     -v /tmp/mydata:/home/requester/data \
     tli551/requester:latest
 ```
-
 
 ### Put everything together
 
