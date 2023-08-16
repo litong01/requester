@@ -76,10 +76,6 @@ func fixData(path string) {
 	}
 	defer out.Close()
 	out.Write(stdout)
-
-	//writer := bufio.NewWriter(out)
-	//defer writer.Flush()
-	//writer.Write(stdout)
 }
 
 func main() {
