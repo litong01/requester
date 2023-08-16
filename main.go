@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -59,6 +60,28 @@ const (
 	DATEFORMAT = "2006-01-02T15-04-05Z"
 )
 
+func fixData(path string) {
+	delCmd := "jq 'del(.data.result[].value[0])' " + path
+
+	stdout, err := exec.Command("bash", "-c", delCmd).CombinedOutput()
+	if err != nil {
+		log.Logger.Error(err.Error())
+		log.Logger.Error("Cannot remove the timestamp from json file.")
+		return
+	}
+
+	out, err := os.Create(path)
+	if err != nil {
+		log.Logger.Error("Cannot reopen the file for writing.")
+	}
+	defer out.Close()
+	out.Write(stdout)
+
+	//writer := bufio.NewWriter(out)
+	//defer writer.Flush()
+	//writer.Write(stdout)
+}
+
 func main() {
 
 	configFileName := os.Getenv("CONFIG")
@@ -111,8 +134,8 @@ func main() {
 			"time":  {strVal},
 		}
 		// Here is the retry of each query if it fails
+		dataPath := fmt.Sprintf("%s/%s.json", dataDir, query.Name)
 		for _, backoff := range backoffSchedule {
-			dataPath := fmt.Sprintf("%s/%s.json", dataDir, query.Name)
 			err = getData(formData, dataPath)
 			if err == nil {
 				break
@@ -122,6 +145,7 @@ func main() {
 		if err != nil {
 			log.Logger.Error("Error when retrieve the metrics", "error", err.Error())
 		}
+		fixData(dataPath)
 	}
 	log.Logger.Info("The run has finished successfully")
 }
