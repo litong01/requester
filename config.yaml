@@ -12,6 +12,9 @@ queries:
   - name: AccountDetailActivatedUser
     query: |
       sort_desc(sum by (accountID, accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job="identity", measurement="activated"}[1h])))
+  - name: AccountDetailBillingMinutesWithTerms
+    query: |
+      label_replace(sum by (account_id, account_name, terms) (max_over_time (astra_billing_account_total_minutes{}[1h])), "accountID", "$1", "account_id", "(.*)")
   - name: AccountDetailBillingMinutes
     query: |
       sort_desc(sum by (accountID, accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job="identity", measurement="activated"}[1h])))
