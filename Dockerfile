@@ -10,8 +10,9 @@ RUN apk add --update --no-cache bash jq doas supercronic shadow
 
 # Add non root user
 RUN adduser -D -h /home/requester requester && \
-      adduser requester wheel && \
-      echo "permit persist :wheel" > /etc/doas.d/doas.conf
+    mkdir -p /home/requester/data && chown requester /home/requester/data && \
+    adduser requester wheel && \
+    echo "permit persist :wheel" > /etc/doas.d/doas.conf
 
 COPY --from=BUILDER /go/src/github.com/requester/requester /usr/local/bin
 COPY ./config.yaml /home/requester/config.yaml 
