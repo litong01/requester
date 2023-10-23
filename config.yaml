@@ -87,5 +87,9 @@ queries:
   - name: TotalNamespaceAssociatedByAccount
     query: |
       sort_desc(sum by (account_name) (max by (account_id, account_name)(astra_nautilus_app_v6{state="namespace_associated"})))
-
-
+  - name: TotalBackupsByAccountLastWeek
+    query: |
+      sort_desc(max by (account_id,account_name) (max_over_time(astra_nautilus_backup_v6[1w])) > 0)
+  - name: TotalSnapshotsByAccountLastWeek
+    query: |
+      sort_desc(max by (account_id,account_name) (max_over_time(astra_nautilus_snapshot_v6[1w])) > 0)
