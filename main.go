@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,9 +33,9 @@ type Query struct {
 	Query string `json:"query"`
 }
 
-func getData(urlvalues url.Values, target string) error {
-	req, err := http.NewRequest("POST", "https://prometheus.prd.ee01.prd.azr.astra.netapp.io/api/v1/query",
-		strings.NewReader(urlvalues.Encode()))
+func getData(urlvalues url.Values, targetdir string, endpoint string) error {
+
+	req, err := http.NewRequest("POST", endpoint, strings.NewReader(urlvalues.Encode()))
 	if err != nil {
 		return err
 	}
@@ -47,7 +48,7 @@ func getData(urlvalues url.Values, target string) error {
 	}
 	defer resp.Body.Close()
 
-	out, err := os.Create(target)
+	out, err := os.Create(targetdir)
 	if err != nil {
 		return err
 	}
@@ -122,6 +123,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 	unixMilli := currentTime.UnixMilli() / 1000
 	strVal := strconv.FormatInt(int64(unixMilli), 10)
 	for _, query := range config.Queries {
@@ -132,7 +135,7 @@ func main() {
 		// Here is the retry of each query if it fails
 		dataPath := fmt.Sprintf("%s/%s.json", dataDir, query.Name)
 		for _, backoff := range backoffSchedule {
-			err = getData(formData, dataPath)
+			err = getData(formData, dataPath, config.Endpoint)
 			if err == nil {
 				break
 			}

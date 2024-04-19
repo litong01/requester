@@ -100,6 +100,24 @@ docker run -d --rm --name runner --network host \
     tli551/requester:latest
 ```
 
+### Make json data to be the sql source via apache drill
+
+When use deploy.yaml file deploy this app onto k8s, one can simply
+use apache drill sql to query data. Here is an example query to get
+number of users for each account. Notice that the directory name is
+used as the `theTimestamp` field in the result set.
+
+```
+select comps.theTimestamp as theTimestamp,
+       comps.result.metric.accountID as accountID,
+       comps.result.metric.accountName as accountName,
+       comps.result.metric.accountCompanyName as accountCompanyName,
+       comps.result.value[0] as value
+       from (select flatten(users.data.result) as result, dir0 as theTimestamp 
+             from dfs.`/tmp/data/*/AccountDetailActivatedUser.json` users) comps
+```
+
+
 ### Query configuration file
 Query configuration file is a yaml file, which contains an endpoint which let runner
 run the queries against, and a set of queries. Each query takes in a name and prometheus
