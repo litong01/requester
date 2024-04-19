@@ -104,7 +104,7 @@ docker run -d --rm --name runner --network host \
 
 When use deploy.yaml file deploy this app onto k8s, one can simply
 use apache drill sql to query data. Here is an example query to get
-number of users for each account. Notice that the directory name is
+number of activated users for each account. Notice that the directory name is
 used as the `theTimestamp` field in the result set.
 
 ```
