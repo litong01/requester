@@ -61,6 +61,28 @@ const (
 	DATEFORMAT = "2006-01-02T15-04-05Z"
 )
 
+func fixLatestTime(path string, name string) {
+	if strings.Contains(name, "LatestActionTime") {
+		delCmd := `jq '.data.result | [.[] | .metric] | group_by(.account_id, .account_name) | map(max_by(.latest_time))
+		| {"status": "success", "data": {"resultType": "vector", "result": [.[] | {"metric": ., "value": 0}] }}
+		' ` + path
+
+		stdout, err := exec.Command("bash", "-c", delCmd).CombinedOutput()
+		if err != nil {
+			log.Logger.Error(err.Error())
+			log.Logger.Error("Cannot remove the timestamp from json file.")
+			return
+		}
+
+		out, err := os.Create(path)
+		if err != nil {
+			log.Logger.Error("Cannot reopen the file for writing.")
+		}
+		defer out.Close()
+		out.Write(stdout)
+	}
+}
+
 func fixData(path string) {
 	delCmd := "jq 'del(.data.result[].value[0])' " + path
 
@@ -145,6 +167,7 @@ func main() {
 			log.Logger.Error("Error when retrieve the metrics", "error", err.Error())
 		}
 		fixData(dataPath)
+		fixLatestTime(dataPath, query.Name)
 	}
 	log.Logger.Info("The run has finished successfully")
 }
