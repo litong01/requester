@@ -5,25 +5,25 @@ queries:
       count(max by (account_id,account_name) (max_over_time(astra_nautilus_app_v6{state=~"protected|partial|atRisk|none|clone"}[1d])) > 0)
   - name: TotalPremiumAccount
     query: |
-      count(count by (account_name) (count_over_time(astra_billing_account_total_minutes{terms="paid"}[1h])))
+      count(max by(account_id, account_name) (astra_billing_account_total_minutes{terms="paid"}))
   - name: AccountDetailRegisteredUser
     query: |
-      sort_desc(sum by (accountID,accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job="identity", measurement="registered"}[1h])))
+      sort_desc(sum by (accountID, accountName, accountCreationTime, accountCompanyName) (max_over_time(user_total{job="identity", measurement="registered"}[1h])))
   - name: AccountDetailActivatedUser
     query: |
-      sort_desc(sum by (accountID, accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job="identity", measurement="activated"}[1h])))
+      sort_desc(sum by (accountID, accountName, accountCreationTime, accountCompanyName) (max_over_time(user_total{job="identity", measurement="activated"}[1h])))
   - name: AccountDetailBillingMinutesWithTerms
     query: |
-      label_replace(sum by (account_id, account_name, terms) (max_over_time (astra_billing_account_total_minutes{}[1h])), "accountID", "$1", "account_id", "(.*)")
+      sort_desc(sum by (account_id, account_name, terms) (max_over_time (astra_billing_account_total_minutes{}[1h])))
   - name: AccountDetailBillingMinutes
     query: |
-      sort_desc(sum by (accountID, accountName,accountCreationTime,accountCompanyName) (max_over_time(user_total{job="identity", measurement="activated"}[1h])))
+      sort_desc(sum by (accountID, accountName, accountCreationTime, accountCompanyName) (max_over_time(user_total{job="identity", measurement="activated"}[1h])))
   - name: TotalPaidMinutes
     query: |
-      sum by (terms) (max_over_time(astra_billing_account_total_minutes{terms="paid"}[1h]))
+      sum(max_over_time(astra_billing_account_total_minutes{terms="paid"}[1h]))
   - name: TotalActivatedUsers
     query: |
-      sum (max_over_time(user_total{measurement="activated",service="identity"}[1h]))
+      sum(max_over_time(user_total{measurement="activated",service="identity"}[1h]))
   - name: TotalApplications
     query: |
       sort_desc(sum(max by (account_id, account_name, state)(astra_nautilus_app_v6{state=~"protected|partial|atRisk|none"})))
@@ -44,10 +44,10 @@ queries:
       sort_desc(sum(max by (account_id, account_name)(astra_nautilus_app_v6{state="atRisk"})))
   - name: TotalBackups
     query: |
-      sort_desc(sum (max by (account_id,account_name) (max_over_time(astra_nautilus_backup_v6{}[1h]))))
+      sort_desc(sum (max by (account_id, account_name) (max_over_time(astra_nautilus_backup_v6{}[1h]))))
   - name: TotalSnapshots
     query: |
-      sort_desc(sum(max by (account_id,account_name,healthy) (max_over_time(astra_nautilus_snapshot_v6{}[1h]))))
+      sort_desc(sum(max by (account_id, account_name, healthy) (max_over_time(astra_nautilus_snapshot_v6{}[1h]))))
   - name: TotalApplicationByAccount
     query: |
       sort_desc(sum by (account_id, account_name)(max by (account_id, account_name, state)(astra_nautilus_app_v6{state=~"protected|partial|atRisk|none"})))
@@ -71,22 +71,22 @@ queries:
       sort_desc(sum by (account_id, account_name) (max by(account_id, account_name) (max_over_time(astra_nautilus_backup_v6{healthy=""}[1h]))))
   - name: TotalBackupPVCStorageUsedByAccount
     query: |
-      sort_desc(sum by (account_id) (max by (account_id, backup_id) (max_over_time(astra_nautilus_backup_v6_total_bytes{}[1h]))))
+      sort_desc(sum by (account_id, account_name) (max by (account_id, account_name, backup_id) (max_over_time(astra_nautilus_backup_v6_total_bytes{}[1h]))))
   - name: TotalSnapshotByAccount
     query: |
-      sort_desc(sum by (account_id) (max by (account_id, account_name) (max_over_time(astra_nautilus_snapshot_v6{healthy=""}[1h]))))
+      sort_desc(sum by (account_id, account_name) (max by (account_id, account_name) (max_over_time(astra_nautilus_snapshot_v6{healthy=""}[1h]))))
   - name: TotalNamespaceAvailable
     query: |
       sum(max by (account_id, account_name, state)(astra_nautilus_app_v6{state="namespace_available"}))
   - name: TotalNamespaceAvailableByAccount
     query: |
-      sort_desc(sum by (account_name) (max by (account_id, account_name)(astra_nautilus_app_v6{state="namespace_available"})))
+      sort_desc(sum by (account_id, account_name) (max by (account_id, account_name)(astra_nautilus_app_v6{state="namespace_available"})))
   - name: TotalNamespaceAssociated
     query: |
       sum(max by (account_id, account_name, state)(astra_nautilus_app_v6{state="namespace_associated"}))
   - name: TotalNamespaceAssociatedByAccount
     query: |
-      sort_desc(sum by (account_name) (max by (account_id, account_name)(astra_nautilus_app_v6{state="namespace_associated"})))
+      sort_desc(sum by (account_id, account_name) (max by (account_id, account_name)(astra_nautilus_app_v6{state="namespace_associated"})))
   - name: TotalBackupsByAccountLastWeek
     query: |
       sort_desc(max by (account_id,account_name) (max_over_time(astra_nautilus_backup_v6[1w])) > 0)

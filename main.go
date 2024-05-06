@@ -83,6 +83,28 @@ func fixLatestTime(path string, name string) {
 	}
 }
 
+func fixFieldNames(path string, name string) {
+	delCmd1 := `sed -i 's/accountID/account_id/g' ` + path
+	delCmd2 := `sed -i 's/accountName/account_name/g' ` + path
+
+	allFilesWithIncorrectNames := "AccountDetailRegisteredUser,AccountDetailActivatedUser,AccountDetailBillingMinutes"
+	if strings.Contains(allFilesWithIncorrectNames, name) {
+		_, err := exec.Command("bash", "-c", delCmd1).CombinedOutput()
+		if err != nil {
+			log.Logger.Error(err.Error())
+			log.Logger.Error("Cannot replace accountID with account_id from json file.")
+			return
+		}
+
+		_, err = exec.Command("bash", "-c", delCmd2).CombinedOutput()
+		if err != nil {
+			log.Logger.Error(err.Error())
+			log.Logger.Error("Cannot remove the timestamp from json file.")
+			return
+		}
+	}
+}
+
 func fixData(path string) {
 	delCmd := "jq 'del(.data.result[].value[0])' " + path
 
@@ -168,6 +190,7 @@ func main() {
 		}
 		fixData(dataPath)
 		fixLatestTime(dataPath, query.Name)
+		fixFieldNames(dataPath, query.Name)
 	}
 	log.Logger.Info("The run has finished successfully")
 }
