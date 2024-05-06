@@ -64,7 +64,7 @@ const (
 func fixLatestTime(path string, name string) {
 	if strings.Contains(name, "LatestActionTime") {
 		delCmd := `jq '.data.result | [.[] | .metric] | group_by(.account_id, .account_name) | map(max_by(.latest_time))
-		| {"status": "success", "data": {"resultType": "vector", "result": [.[] | {"metric": ., "value": [0]}] }}
+		| {"status": "success", "data": {"resultType": "vector", "result": [.[] | {"metric": ., "value": ["0"]}] }}
 		' ` + path
 
 		stdout, err := exec.Command("bash", "-c", delCmd).CombinedOutput()
