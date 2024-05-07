@@ -4,17 +4,17 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
-
-	"github.com/requester/common/log"
 )
 
 var backoffSchedule = []time.Duration{
@@ -33,6 +33,24 @@ type Query struct {
 	Query string `json:"query"`
 }
 
+var (
+	repCmd1 = `sed -i 's/accountID/account_id/g' `
+	repCmd2 = `sed -i 's/accountName/account_name/g' `
+)
+
+var statuslogger *slog.Logger
+
+const (
+	DATEFORMAT = "2006-01-02T15-04-05Z"
+)
+
+func setCmds() {
+	if runtime.GOOS == "darwin" {
+		repCmd1 = `sed -i '' 's/accountID/account_id/g' `
+		repCmd2 = `sed -i '' 's/accountName/account_name/g' `
+	}
+}
+
 func getData(urlvalues url.Values, targetdir string, endpoint string) error {
 
 	req, err := http.NewRequest("POST", endpoint, strings.NewReader(urlvalues.Encode()))
@@ -46,6 +64,9 @@ func getData(urlvalues url.Values, targetdir string, endpoint string) error {
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("the response code is not 200, but %d", resp.StatusCode)
+	}
 	defer resp.Body.Close()
 
 	out, err := os.Create(targetdir)
@@ -57,10 +78,6 @@ func getData(urlvalues url.Values, targetdir string, endpoint string) error {
 	return nil
 }
 
-const (
-	DATEFORMAT = "2006-01-02T15-04-05Z"
-)
-
 func fixLatestTime(path string, name string) {
 	if strings.Contains(name, "LatestActionTime") {
 		delCmd := `jq '.data.result | [.[] | .metric] | group_by(.account_id, .account_name) | map(max_by(.latest_time))
@@ -69,14 +86,13 @@ func fixLatestTime(path string, name string) {
 
 		stdout, err := exec.Command("bash", "-c", delCmd).CombinedOutput()
 		if err != nil {
-			log.Logger.Error(err.Error())
-			log.Logger.Error("Cannot remove the timestamp from json file.")
+			statuslogger.Error("Cannot remove the timestamp from json file.")
 			return
 		}
 
 		out, err := os.Create(path)
 		if err != nil {
-			log.Logger.Error("Cannot reopen the file for writing.")
+			statuslogger.Error("Cannot reopen the file for writing.")
 		}
 		defer out.Close()
 		out.Write(stdout)
@@ -84,22 +100,23 @@ func fixLatestTime(path string, name string) {
 }
 
 func fixFieldNames(path string, name string) {
-	delCmd1 := `sed -i 's/accountID/account_id/g' ` + path
-	delCmd2 := `sed -i 's/accountName/account_name/g' ` + path
+
+	delCmd1 := repCmd1 + path
+	delCmd2 := repCmd2 + path
 
 	allFilesWithIncorrectNames := "AccountDetailRegisteredUser,AccountDetailActivatedUser,AccountDetailBillingMinutes"
 	if strings.Contains(allFilesWithIncorrectNames, name) {
 		_, err := exec.Command("bash", "-c", delCmd1).CombinedOutput()
 		if err != nil {
-			log.Logger.Error(err.Error())
-			log.Logger.Error("Cannot replace accountID with account_id from json file.")
+			statuslogger.Error("Cannot remove the timestamp from json file.")
+			statuslogger.Error(err.Error())
 			return
 		}
 
 		_, err = exec.Command("bash", "-c", delCmd2).CombinedOutput()
 		if err != nil {
-			log.Logger.Error(err.Error())
-			log.Logger.Error("Cannot remove the timestamp from json file.")
+			statuslogger.Error("Cannot remove the timestamp from json file.")
+			statuslogger.Error(err.Error())
 			return
 		}
 	}
@@ -110,20 +127,22 @@ func fixData(path string) {
 
 	stdout, err := exec.Command("bash", "-c", delCmd).CombinedOutput()
 	if err != nil {
-		log.Logger.Error(err.Error())
-		log.Logger.Error("Cannot remove the timestamp from json file.")
+		statuslogger.Error("Cannot remove the timestamp from json file.")
+		statuslogger.Error(err.Error())
 		return
 	}
 
 	out, err := os.Create(path)
 	if err != nil {
-		log.Logger.Error("Cannot reopen the file for writing.")
+		statuslogger.Error("Cannot reopen the file for writing.")
 	}
 	defer out.Close()
 	out.Write(stdout)
 }
 
 func main() {
+
+	setCmds()
 
 	configFileName := os.Getenv("CONFIG")
 	if configFileName == "" {
@@ -140,7 +159,6 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	log.Logger.Info("Successfully opened configuration file")
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer configFile.Close()
 
@@ -154,18 +172,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	msg := fmt.Sprintf("The endpoint is %s", config.Endpoint)
-	log.Logger.Info(msg)
 	currentTime := time.Now().UTC()
 
 	// Now setup data directory
 	dataDir := fmt.Sprintf("%s/%s", dataRootDir, currentTime.Format(DATEFORMAT))
 	err = os.Mkdir(dataDir, os.ModePerm)
 	if err != nil {
-		log.Logger.Error("Error when creating the data directory, cannot continue", "error", err.Error())
-		log.Logger.Error("You may have disk run out space or the permission may not be right.")
+		fmt.Printf("Error when creating the data directory, cannot continue %v\n", err.Error())
+		fmt.Printf("You may have disk run out space or the permission may not be right\n")
 		os.Exit(1)
 	}
+
+	logfile, err := os.OpenFile(dataDir+"/status.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		panic(err)
+	}
+	defer logfile.Close()
+
+	// Create a new logger with a JSONHandler to write logs in JSON format
+	statuslogger = slog.New(slog.NewJSONHandler(logfile, nil))
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
@@ -186,11 +211,12 @@ func main() {
 			time.Sleep(backoff)
 		}
 		if err != nil {
-			log.Logger.Error("Error when retrieve the metrics", "error", err.Error())
+			statuslogger.Error("Error when retrieve the metrics", "metrics", query.Name, "error", err.Error())
+			continue
 		}
 		fixData(dataPath)
 		fixLatestTime(dataPath, query.Name)
 		fixFieldNames(dataPath, query.Name)
 	}
-	log.Logger.Info("The run has finished successfully")
+	statuslogger.Info("The run has finished successfully")
 }

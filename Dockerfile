@@ -1,10 +1,10 @@
-FROM golang:1.20.0-alpine3.17 as BUILDER
+FROM golang:1.22.2-alpine3.19 as BUILDER
 ADD . /go/src/github.com/requester
 WORKDIR /go/src/github.com/requester
 RUN cd /go/src/github.com/requester && \
     go build -o requester
 
-FROM alpine:3.17.1
+FROM alpine:3.19
 # Install necessary software
 RUN apk add --update --no-cache bash jq doas supercronic shadow
 
