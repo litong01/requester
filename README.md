@@ -14,8 +14,10 @@ Run ```.\runner```
 
 ### Connect to apache drill
 
+```
 JDBC Driver: drill-jdbc-all-1.21.1.jar
 JDBC URL: jdbc:drill:drillbit=localhost:31010
+```
 No database user and password are needed
 
 ### Sample SQL query to query json data
