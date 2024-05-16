@@ -1,6 +1,6 @@
 # Prometheus query runner
 
-## How to run Prometheus query runner
+## How to run Prometheus query runner and apache drill
 
 This application require docker runtime.
 
@@ -11,6 +11,24 @@ Run ```./runner```
 ### For Windows system
 Download [runner.cmd](runner.cmd), name it runner.cmd.
 Run ```.\runner```
+
+### Connect to apache drill
+
+JDBC Driver: drill-jdbc-all-1.21.1.jar
+JDBC URL: jdbc:drill:drillbit=localhost:31010
+No database user and password are needed
+
+### Sample SQL query to query json data
+
+```
+select comps.theTimestamp as theTimestamp,
+       comps.result.metric.accountID as accountID,
+       comps.result.metric.accountName as accountName,
+       comps.result.metric.accountCompanyName as accountCompanyName,
+       comps.result.value[0] as value
+       from (select flatten(users.data.result) as result, dir0 as theTimestamp 
+             from dfs.`/tmp/data/*/AccountDetailActivatedUser.json` users) comps
+```
 
 ## Customize the runner if needed
 By default, the runner uses a query configuration file come with the runner, save

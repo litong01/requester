@@ -1,5 +1,11 @@
 #!/bin/bash
-# The script to start the data requester application
-docker run -d --rm --name runner --network host \
+# The script to start the data requester application and apache drill
+# requester will pull data onto local /tmp/data directory, and apache
+# drill will access the data from local /tmp/data directory.
+docker run -d --rm --name runner \
    -v /tmp/data:/home/requester/data \
    tli551/requester:latest
+docker run -dit --rm --name drill \
+   -p 8047:8047 -p 31010:31010 \
+   -v /tmp/data:/tmp/data  \
+   --platform=linux/amd64 apache/drill:master-openjdk-17
